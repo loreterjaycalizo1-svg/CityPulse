@@ -1,0 +1,4 @@
+citypulse_backend/node_modules/
+citypulse_frontend/node_modules/
+citypulse_backend/.env
+.DS_Store
