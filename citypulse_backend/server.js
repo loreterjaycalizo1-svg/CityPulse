@@ -3,7 +3,7 @@ const dns = require('node:dns');
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 const express = require('express');
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 const mongoose = require('mongoose');
 const TrafficRecord = require('./models/TrafficRecord'); // 👈 Import your new schema model!
 const { totalmem } = require('node:os');
@@ -181,4 +181,5 @@ app.get('/api/traffic/analytics/pipeline', async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
+    
 });    
