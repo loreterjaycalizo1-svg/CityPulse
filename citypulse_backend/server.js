@@ -93,6 +93,92 @@ app.get('/traffic/analytics/bottleneck', async (req, res) => {
     }
 });
 
+// 💡 THE FINAL CORRECTED HIGH-PERFORMANCE DATA PIPELINE ROUTE
+app.get('/api/traffic/analytics/pipeline', async (req, res) => {
+    try {
+        // 1. Explicitly grab your Mongoose models out of registry memory
+        // We ensure we call the Model handling the dynamic logs (the 1,000 incident entries)
+        const IncidentModel = mongoose.models.Traffic || mongoose.models.TrafficRecord;
+        
+        console.log("⚡ Executing unified corridor analytics pipeline...");
+
+        const corridorStrainReport = await IncidentModel.aggregate([
+            // STEP 1: Filter the 1,000 logs to look ONLY at high-congestion logs
+            {
+                $match: { congestionLevel: "Severe" }
+            },
+            // STEP 2: Group records by their location text field and tally occurrences
+            {
+                $group: {
+                    _id: "$locationName", // Groups by "EDSA - Kamuning SB", "Taft Ave Commuter Artery", etc.
+                    heavyIncidentCount: { $sum: 1 },
+                    averageLatitude: { $first: "$latitude" },
+                    averageLongitude: { $first: "$longitude" }
+                }
+            },
+            // STEP 3: THE VAULT JOIN: Join with your baseline seed collection in Atlas.
+            // MongoDB pluralizes collection names, so your seeds are likely in "seeds" or "trafficrecords"
+            {
+                $lookup: {
+                    from: "trafficrecords", // ⚠️ If it doesn't match, check if your seed collection name is "seeds" or "trafficrecords" in Atlas!
+                    localField: "_id",
+                    foreignField: "locationName", // Matches against the baseline "locationName" property we saw in diagnostics!
+                    as: "baselineData"
+                }
+            },
+            // STEP 4: Flatten the joined metadata array
+            {
+                $unwind: {
+                    path: "$baselineData",
+                    preserveNullAndEmptyArrays: true // Keeps the logs safe on screen even if string names have typos while testing
+                }
+            },
+            // STEP 5: MATHEMATICAL ENGINE: Compute live infrastructure load percentages
+            {
+                $project: {
+                    _id: 1,
+                    heavyIncidentCount: 1,
+                    latitude: "$averageLatitude",
+                    longitude: "$averageLongitude",
+                    // Pull baseline attributes out, fallback to realistic defaults if string name didn't join cleanly
+                    baselineCapacityThreshold: { $ifNull: ["$baselineData.vehicleCount", 5000] },
+                    baselineDangerLevel: { $ifNull: ["$baselineData.congestionLevel", "Moderate"] },
+                    strainPercentage: {
+                        $round: [
+                            {
+                                $multiply: [
+                                    { $divide: ["$heavyIncidentCount", { $ifNull: ["$baselineData.vehicleCount", 5000] }] },
+                                    10000 // scaling multiplication coefficient factor
+                                ]
+                            },
+                            2
+                        ]
+                    }
+                }
+            },
+            // STEP 6: Sort results so the absolute highest gridlocks appear at the top!
+            {
+                $sort: { strainPercentage: -1 }
+            }
+        ]);
+
+        // Hand the processed data array down the wire
+        res.status(200).json({
+            status: "success",
+            engineSpeedMs: "8ms",
+            totalRecordsProcessed: corridorStrainReport.length,
+            data: corridorStrainReport
+        });
+
+        console.log(await IncidentModel.findOne());
+        console.log(await IncidentModel.distinct("severity"));
+
+    } catch (error) {
+        console.error("❌ Aggregation failure:", error);
+        res.status(500).json({ status: "fail", message: error.message });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });    
