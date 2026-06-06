@@ -97,7 +97,9 @@ app.get('/traffic/analytics/bottleneck', async (req, res) => {
 const analyticsHandler = async (req, res) => {
     try {
         // 🛠️ FIX 2: RE-ENGINEERED UNBREAKABLE SERVERLESS REGISTRY RESOLUTION LOOKUP
-        const IncidentModel = mongoose.models.TrafficRecord || mongoose.model('TrafficRecord', TrafficRecord.schema || TrafficRecord);
+     // 🚀 THE SECURE UNBREAKABLE SERVERLESS REGISTRY RESOLUTION
+// If Mongoose drops the compiled model from cache, this explicitly recreates the schema hook instantly!
+const IncidentModel = mongoose.models.TrafficRecord || mongoose.model('TrafficRecord', TrafficRecord.schema || TrafficRecord);
         
         console.log("⚡ Executing unified corridor analytics pipeline...");
 
