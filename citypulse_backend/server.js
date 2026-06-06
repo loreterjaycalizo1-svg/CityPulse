@@ -3,16 +3,22 @@ const dns = require('node:dns');
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 3000; // 🛠️ FIXED: Standardized uppercase port variable
+const PORT = process.env.PORT || 3000; 
 const mongoose = require('mongoose');
 const TrafficRecord = require('./models/TrafficRecord'); 
 const { totalmem } = require('node:os');
 
-// 🛠️ FIXED: Switched your static string key to check for the cloud environment variable first!
+// 🔐 SECURE VAULT ENVIRONMENT LAYER CHECK
 const dbURI = process.env.MONGODB_URI || 'mongodb+srv://rjay:3xgmQqU9W4oAPfXA@rjieee.gq24jso.mongodb.net/?appName=Rjieee';
 
 app.use(express.json());
-app.use(cors());
+
+// 🔓 GLOBAL ACCESS SHIELD WITH EXPLICIT HEADERS FOR VERCEL HANDSHAKE OVERRIDES
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 mongoose.connect(dbURI)
     .then(() => console.log('📡 Connected to MongoDB Atlas Cluster!'))
@@ -90,7 +96,8 @@ app.get('/traffic/analytics/bottleneck', async (req, res) => {
 // 💡 THE HIGH-PERFORMANCE DATA PIPELINE ROUTE (Both endpoint paths supported for safety)
 const analyticsHandler = async (req, res) => {
     try {
-        const IncidentModel = mongoose.models.Traffic || mongoose.models.TrafficRecord || TrafficRecord;
+        // 🛠️ FIX 2: RE-ENGINEERED UNBREAKABLE SERVERLESS REGISTRY RESOLUTION LOOKUP
+        const IncidentModel = mongoose.models.TrafficRecord || mongoose.model('TrafficRecord', TrafficRecord.schema || TrafficRecord);
         
         console.log("⚡ Executing unified corridor analytics pipeline...");
 

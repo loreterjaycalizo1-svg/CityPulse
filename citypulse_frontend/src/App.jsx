@@ -35,7 +35,7 @@ const LiveCockpitDashboard = () => {
    // 🔄 DISCONNECT LOCAL FEEDS — CONNECT THE GLOBAL PRODUCTION PIPELINE!
 
 // Swap out your old endpoints for the live ones:
-const response = await axios.get('https://city-pulse-wm8h.vercel.app//api/traffic/analytics/pipeline');
+const response = await axios.get('https://city-pulse-wm8h.vercel.app/api/traffic/analytics/pipeline');
       if (response.data && Array.isArray(response.data.data)) {
         setBottlenecks(response.data.data)
       } else if (Array.isArray(response.data)) {
