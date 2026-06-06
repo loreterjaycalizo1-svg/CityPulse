@@ -11,7 +11,10 @@ const Analytics = () => {
       try {
         setLoading(true);
         // 📡 Streaming fresh metrics from your verified backend aggregation route
-        const response = await axios.get('http://localhost:3000/api/traffic/analytics/pipeline');
+       // 🔄 DISCONNECT LOCAL FEEDS — CONNECT THE GLOBAL PRODUCTION PIPELINE!
+
+// Swap out your old endpoints for the live ones:
+const response = await axios.get('https://YOUR-VERCEL-BACKEND-URL.vercel.app/api/traffic/analytics/pipeline');
         
         if (response.data && Array.isArray(response.data.data)) {
           
