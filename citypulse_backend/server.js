@@ -167,3 +167,23 @@ if (process.env.NODE_ENV !== 'production') {
 
 // 🚀 CRITICAL EXPORT FOR VERCEL HANDSHAKE LAYERS
 module.exports = app;
+
+app.get('/dbtest', async (req, res) => {
+    try {
+        console.log("Connection state:", mongoose.connection.readyState);
+
+        const count = await TrafficRecord.countDocuments();
+
+        res.json({
+            connected: mongoose.connection.readyState,
+            records: count
+        });
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
