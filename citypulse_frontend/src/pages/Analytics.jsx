@@ -14,7 +14,7 @@ const Analytics = () => {
        // 🔄 DISCONNECT LOCAL FEEDS — CONNECT THE GLOBAL PRODUCTION PIPELINE!
 
 // Swap out your old endpoints for the live ones:
-const response = await axios.get('https://city-pulse-wm8h.vercel.app/api/traffic/analytics/pipeline');
+const response = await axios.get('https://city-pulse-fawn.vercel.app/api/traffic/analytics/pipeline');
         
         if (response.data && Array.isArray(response.data.data)) {
           
